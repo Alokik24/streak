@@ -1,41 +1,38 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Streak</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
     <main class="container">
-        <section class="game-card">
-            <h1>STREAK</h1>
+      <section class="game-card">
+        <h1>STREAK</h1>
 
-            <p class="tagline">ONE GUESS. EVERY DAY.</p>
+        <p class="tagline">ONE GUESS. EVERY DAY.</p>
 
-            <p class="instruction">
-                Guess today's number<br>
-                between 1 and 100
-            </p>
+        <p class="instruction">Guess today's number between 1 and 100</p>
 
-            <input
-                id="guess-input"
-                type="number"
-                min="1"
-                max="100"
-                aria-label="Your guess"
-            >
+        <div id="clues" class="clues"></div>
 
-            <button id="guess-button">GUESS</button>
+        <input
+          id="guess-input"
+          type="number"
+          min="1"
+          max="100"
+          aria-label="Your guess"
+        />
 
-            <p class="streak">
-                Current streak: <span id="streak-value">0</span>
-            </p>
+        <button id="guess-button">GUESS</button>
 
-            <p id="result" class="result" aria-live="polite"></p>
-        </section>
+        <p class="streak">Current streak: <span id="streak-value">0</span></p>
+
+        <p id="result" class="result" aria-live="polite"></p>
+      </section>
     </main>
 
     <script src="/static/app.js"></script>
-</body>
+  </body>
 </html>

@@ -11,7 +11,7 @@ from app.database import (
     get_or_create_player,
     update_player,
 )
-from app.game import get_today_answer
+from app.game import get_today_answer, get_today_clues
 
 
 app = FastAPI()
@@ -73,6 +73,7 @@ def get_today(player_id: str = Query(default="local-player")):
     return {
         "min": 1,
         "max": 100,
+        "clues": get_today_clues(today),
         "streak": current_streak,
         "already_played": already_played,
         "message": message,
