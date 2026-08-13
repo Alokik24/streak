@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
@@ -38,14 +38,44 @@ def serve_frontend():
 def get_today(player_id: str = Query(default="local-player")):
     player = get_or_create_player(player_id)
 
+    player_id = player[0]
+    current_streak = player[1]
     last_played_date = player[2]
-    already_played = last_played_date == date.today().isoformat()
+    last_puzzle_date = player[3]
+
+    today = date.today()
+    today_string = today.isoformat()
+
+    # Detect a missed day and immediately break the old streak.
+    if last_played_date is not None:
+        last_played = date.fromisoformat(last_played_date)
+        yesterday = today - timedelta(days=1)
+
+        if last_played < yesterday:
+            current_streak = 0
+
+            update_player(
+                player_id=player_id,
+                streak=0,
+                last_played_date=last_played_date,
+                last_puzzle_date=last_puzzle_date,
+            )
+
+    already_played = last_played_date == today_string
+
+    if already_played:
+        message = "You already played today."
+    elif current_streak == 0 and last_played_date is not None:
+        message = "You missed a day. Your previous streak was broken."
+    else:
+        message = "Make your guess."
 
     return {
         "min": 1,
         "max": 100,
-        "streak": player[1],
+        "streak": current_streak,
         "already_played": already_played,
+        "message": message,
     }
 
 
@@ -66,24 +96,50 @@ def submit_guess(request: GuessRequest):
     current_streak = player[1]
     last_played_date = player[2]
 
+    # One guess per day.
     if last_played_date == today_string:
         raise HTTPException(
             status_code=409,
             detail="You have already played today.",
         )
 
-    answer = get_today_answer(today)
+    # If the player missed one or more days, the old streak
+    # is already considered broken.
+    if last_played_date is not None:
+        last_played = date.fromisoformat(last_played_date)
+        yesterday = today - timedelta(days=1)
 
+        if last_played < yesterday:
+            current_streak = 0
+
+    answer = get_today_answer(today)
     correct = request.guess == answer
 
-    if correct:
-        new_streak = current_streak + 1
-        result = "correct"
-        message = "Correct!"
-    else:
+    if not correct:
         new_streak = 0
         result = "incorrect"
-        message = "Incorrect."
+        message = "Wrong guess. Your streak was reset."
+
+    else:
+        # First successful day or successful guess after
+        # a missed day starts a new streak.
+        if last_played_date is None:
+            new_streak = 1
+            message = "Correct! You started a new streak."
+
+        else:
+            last_played = date.fromisoformat(last_played_date)
+            yesterday = today - timedelta(days=1)
+
+            if last_played == yesterday:
+                new_streak = current_streak + 1
+                message = "Correct! Your streak continues."
+
+            else:
+                new_streak = 1
+                message = "Correct! You started a new streak."
+
+        result = "correct"
 
     update_player(
         player_id=player_id,

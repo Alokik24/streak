@@ -25,3 +25,8 @@ def get_today_answer(game_date: date | None = None) -> int:
         answer = answer % 100 + 1
 
     return answer
+
+# if __name__ == "__main__":
+#     from datetime import date
+
+#     print(get_today_answer(date.today()))
