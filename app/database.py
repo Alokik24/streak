@@ -64,3 +64,32 @@ def get_or_create_player(player_id):
     connection.close()
 
     return player
+
+
+def update_player(
+    player_id,
+    streak,
+    last_played_date,
+    last_puzzle_date,
+):
+    connection = get_connection()
+
+    connection.execute(
+        """
+        UPDATE player
+        SET
+            streak = ?,
+            last_played_date = ?,
+            last_puzzle_date = ?
+        WHERE player_id = ?
+        """,
+        (
+            streak,
+            last_played_date,
+            last_puzzle_date,
+            player_id,
+        ),
+    )
+
+    connection.commit()
+    connection.close()

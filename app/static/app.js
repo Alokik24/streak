@@ -40,7 +40,7 @@ async function loadToday() {
 }
 
 
-guessButton.addEventListener("click", () => {
+guessButton.addEventListener("click", async () => {
     const guess = Number(guessInput.value);
 
     if (!Number.isInteger(guess) || guess < 1 || guess > 100) {
@@ -48,9 +48,34 @@ guessButton.addEventListener("click", () => {
         return;
     }
 
-    result.textContent = `You guessed ${guess}.`;
-});
+    guessButton.disabled = true;
 
+    try {
+        const response = await fetch("/api/guess", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                player_id: playerId,
+                guess: guess
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            result.textContent = data.detail;
+            return;
+        }
+
+        result.textContent = data.message;
+        streakValue.textContent = data.streak;
+
+    } catch (error) {
+        result.textContent = "Something went wrong.";
+    }
+});
 
 guessInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
