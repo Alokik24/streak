@@ -1,11 +1,23 @@
+import os
 import sqlite3
 from pathlib import Path
+
+import psycopg
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATABASE_PATH = BASE_DIR / "streak.db"
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 def get_connection():
+    if DATABASE_URL:
+        return psycopg.connect(DATABASE_URL)
+
     return sqlite3.connect(DATABASE_PATH)
 
 
@@ -30,28 +42,31 @@ def create_database():
 def get_or_create_player(player_id):
     connection = get_connection()
 
+    placeholder = "%s" if DATABASE_URL else "?"
+
     player = connection.execute(
-        """
+        f"""
         SELECT player_id, streak, last_played_date, last_puzzle_date
         FROM player
-        WHERE player_id = ?
+        WHERE player_id = {placeholder}
         """,
         (player_id,),
     ).fetchone()
 
     if player is None:
         connection.execute(
-            """
+            f"""
             INSERT INTO player (
                 player_id,
                 streak,
                 last_played_date,
                 last_puzzle_date
             )
-            VALUES (?, 0, NULL, NULL)
+            VALUES ({placeholder}, 0, NULL, NULL)
             """,
             (player_id,),
         )
+
         connection.commit()
 
         player = (
@@ -74,14 +89,16 @@ def update_player(
 ):
     connection = get_connection()
 
+    placeholder = "%s" if DATABASE_URL else "?"
+
     connection.execute(
-        """
+        f"""
         UPDATE player
         SET
-            streak = ?,
-            last_played_date = ?,
-            last_puzzle_date = ?
-        WHERE player_id = ?
+            streak = {placeholder},
+            last_played_date = {placeholder},
+            last_puzzle_date = {placeholder}
+        WHERE player_id = {placeholder}
         """,
         (
             streak,
