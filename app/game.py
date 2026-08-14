@@ -67,7 +67,7 @@ def get_today_clues(game_date: date | None = None) -> list[str]:
             lambda n, total=digit_sum: sum(int(d) for d in str(n)) == total,
         )
     )
-
+    
     # Perfect-square clue
     if int(answer ** 0.5) ** 2 == answer:
         clues.append(
