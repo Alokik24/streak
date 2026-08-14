@@ -46,12 +46,15 @@ def get_today(player_id: str = Query(default="local-player")):
     today = date.today()
     today_string = today.isoformat()
 
+    missed_day = False
+    
     # Detect a missed day and immediately break the old streak.
     if last_played_date is not None:
         last_played = date.fromisoformat(last_played_date)
         yesterday = today - timedelta(days=1)
 
         if last_played < yesterday:
+            missed_day = True
             current_streak = 0
 
             update_player(
@@ -65,7 +68,7 @@ def get_today(player_id: str = Query(default="local-player")):
 
     if already_played:
         message = "You already played today."
-    elif current_streak == 0 and last_played_date is not None:
+    elif missed_day:
         message = "You missed a day. Your previous streak was broken."
     else:
         message = "Make your guess."
